@@ -28,7 +28,10 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-
+            
+      - name: Create target directory
+        run: mkdir -p target
+        
       - name: Install dependencies
         run: mvn install -DskipTests
 
