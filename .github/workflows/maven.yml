@@ -1,6 +1,6 @@
 name: Java CI with Maven
 
-on: [push, pull_request]
+on: push
 
 jobs:
   build:
@@ -29,6 +29,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Create target directory
+        run: mkdir -p target
+
       - name: Install dependencies
         run: mvn install -DskipTests
 
@@ -36,11 +39,11 @@ jobs:
         run: mvn test
 
       - name: Generate Cucumber HTML report
-        run: mvn verify -Dcucumber.options="--plugin html:target/cucumber-reports.html"
+        run: mvn verify
 
       - name: Archive test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-reports
-          path: target/cucumber-reports.html
+          path: target/cucumber-reports/*.html
