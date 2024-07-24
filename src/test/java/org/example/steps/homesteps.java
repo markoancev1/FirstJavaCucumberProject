@@ -14,17 +14,21 @@ import org.junit.Assert;
 import org.example.pages.HomePage;
 import org.example.utils.FileReaderUtil;
 import com.opencsv.exceptions.CsvException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 public class homesteps {
+    private static final Logger logger = LoggerFactory.getLogger(homesteps.class);
     WebDriver driver;
     HomePage homePage;
 
     @Given("I have a configured Cucumber-JVM project")
     public void iHaveAConfiguredCucumberJVMProject() {
+        logger.info("Application started.");
         ChromeOptions options = new ChromeOptions();
         options.addArguments("--remote-allow-origins=*");
         options.addArguments("--headless");
@@ -37,6 +41,7 @@ public class homesteps {
 
     @When("I run the tests")
     public void iRunTheTests() {
+        logger.info("Attempting to perform a task.");
         homePage.checkImageVisibility();
     }
 
@@ -47,6 +52,7 @@ public class homesteps {
 
     @When("I read data from file {string} column {string}")
     public void iReadDataFromFileColumn(String filePath, String columnName) throws IOException, CsvException {
+        logger.info("Attempting to perform this task.");
         List<String> columnNames = Arrays.asList(columnName.split(","));
 
         List<Map<String, String>> columnData = FileReaderUtil.readFile(filePath, columnNames);

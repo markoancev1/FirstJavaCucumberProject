@@ -15,7 +15,6 @@ public class HomePage extends BasePage{
 
     // Methods
     public void checkImageVisibility() {
-        System.out.println(driver);
         WebElement imgElement = driver.findElement(imgPicture);
         waitForElementToBeVisible(imgElement);
     }

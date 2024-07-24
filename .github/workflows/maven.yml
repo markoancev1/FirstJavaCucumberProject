@@ -47,3 +47,10 @@ jobs:
         with:
           name: cucumber-reports
           path: target/cucumber-reports/*.html
+
+      - name: Archive log file
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-log
+          path: app.log
