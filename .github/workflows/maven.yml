@@ -1,6 +1,9 @@
 name: Java CI with Maven
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      test
 
 jobs:
   build:
@@ -10,6 +13,7 @@ jobs:
     strategy:
       matrix:
         java-version: [22]
+        browser: [chrome, firefox]
 
     steps:
       - name: Checkout repository
@@ -29,14 +33,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Set up Chrome
+        if: matrix.browser == 'chrome'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable
+
+      - name: Set up Firefox
+        if: matrix.browser == 'firefox'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y firefox
+
       - name: Create target directory
         run: mkdir -p target
 
       - name: Install dependencies
         run: mvn install -DskipTests
 
-      - name: Run tests
-        run: mvn test
+      - name: Run tests with Chrome
+        if: matrix.browser == 'chrome'
+        run: mvn test -Dbrowser=chrome
+
+      - name: Run tests with Firefox
+        if: matrix.browser == 'firefox'
+        run: mvn test -Dbrowser=firefox
 
       - name: Archive log file
         if: always()
