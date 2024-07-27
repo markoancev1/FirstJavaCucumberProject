@@ -1,6 +1,6 @@
 name: Java CI with Maven
 
-on:
+on: 
   push:
     branches:
       test
@@ -59,19 +59,33 @@ jobs:
         if: matrix.browser == 'firefox'
         run: mvn test -Dbrowser=firefox
 
-      - name: Archive log file
-        if: always()
+      - name: Archive log file for Chrome
+        if: matrix.browser == 'chrome' && always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-log
+          name: app-log-chrome
+          path: app.log
+
+      - name: Archive log file for Firefox
+        if: matrix.browser == 'firefox' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-log-firefox
           path: app.log
 
       - name: Generate Cucumber HTML report
         run: mvn verify
 
-      - name: Archive test reports
-        if: always()
+      - name: Archive test reports for Chrome
+        if: matrix.browser == 'chrome' && always()
         uses: actions/upload-artifact@v4
         with:
-          name: cucumber-reports
+          name: cucumber-reports-chrome
+          path: cucumber-report.html
+
+      - name: Archive test reports for Firefox
+        if: matrix.browser == 'firefox' && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports-firefox
           path: cucumber-report.html
