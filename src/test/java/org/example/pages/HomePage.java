@@ -1,8 +1,7 @@
 package org.example.pages;
-
+import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 public class HomePage extends BasePage{
     // Constructor
@@ -11,12 +10,13 @@ public class HomePage extends BasePage{
     }
 
     // Locators
+    By ulNavbar = By.id("menu-primary-items");
     By imgPicture = By.cssSelector("img.wp-image-91");
 
     // Methods
     public void checkImageVisibility() {
-        System.out.println(driver);
-        WebElement imgElement = driver.findElement(imgPicture);
-        waitForElementToBeVisible(imgElement);
+        waitForElementsToBeVisible(imgPicture, ulNavbar);
+        boolean allDisplayed = areElementsDisplayed(imgPicture, ulNavbar);
+        Assert.assertTrue(allDisplayed);
     }
 }
