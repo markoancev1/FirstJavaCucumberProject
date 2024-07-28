@@ -104,6 +104,7 @@
                         <include>**/TestRunner.java</include>
                     </includes>
                     <testFailureIgnore>true</testFailureIgnore>
+                    <reportsDirectory>${project.basedir}/cucumber-reports/json</reportsDirectory>
                 </configuration>
             </plugin>
             <plugin>

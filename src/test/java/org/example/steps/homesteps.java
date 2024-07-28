@@ -3,13 +3,7 @@ package org.example.steps;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.Given;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.junit.Assert;
 import org.example.pages.HomePage;
 import org.example.utils.FileReaderUtil;
@@ -20,16 +14,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 public class homesteps {
+
     WebDriver driver;
     HomePage homePage;
 
     @Given("I have a configured Cucumber-JVM project")
     public void iHaveAConfiguredCucumberJVMProject() {
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--remote-allow-origins=*");
-        options.addArguments("--headless");
-        driver = new ChromeDriver(options);
-        driver.get("https://practicetestautomation.com");
+        driver = Hooks.getDriver();
         homePage = new HomePage(driver);
         Assert.assertNotNull(driver);
         Assert.assertNotNull(homePage);
