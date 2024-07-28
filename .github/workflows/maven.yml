@@ -57,7 +57,7 @@ jobs:
           path: app.log
 
       - name: Generate Cucumber HTML report
-        run: mvn verify
+        run: mvn verify -Dbrowser=${{ matrix.browser }}
 
       - name: Archive Cucumber JSON report
         if: always()
