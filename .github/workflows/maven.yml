@@ -6,6 +6,7 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         java-version: [22]
         browser: [chrome, firefox]
@@ -30,9 +31,8 @@ jobs:
 
       - name: Set up Chrome
         if: matrix.browser == 'chrome'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-chrome-stable
+        uses: browser-actions/setup-chrome@latest
+
 
       - name: Set up Firefox
         if: matrix.browser == 'firefox'
