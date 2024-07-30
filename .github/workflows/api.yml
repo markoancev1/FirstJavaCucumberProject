@@ -6,10 +6,8 @@ jobs:
     runs-on: ubuntu-latest
 
     strategy:
-      fail-fast: false
       matrix:
         java-version: [22]
-        browser: [chrome, firefox]
 
     steps:
       - name: Checkout repository
@@ -29,15 +27,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Set up Chrome
-        if: matrix.browser == 'chrome'
-        uses: browser-actions/setup-chrome@latest
-
-
-      - name: Set up Firefox
-        if: matrix.browser == 'firefox'
-        uses: browser-actions/setup-firefox@latest
-
       - name: Ensure target and cucumber directories exist
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber
@@ -47,28 +36,28 @@ jobs:
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/html
 
       - name: Run tests
-        run: mvn -Dtest=CucumberFeatureTest test -Dbrowser=${{ matrix.browser }}
+        run: mvn -Dtest=ApiFeatureTest test
 
       - name: Archive log file
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-log-${{ matrix.browser }}
+          name: app-log-api
           path: app.log
 
       - name: Generate Cucumber HTML report
-        run: mvn -Dtest=CucumberFeatureTest verify -Dbrowser=${{ matrix.browser }}
+        run: mvn -Dtest=ApiFeatureTest verify
 
       - name: Archive Cucumber JSON report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cucumber-json-report-${{ matrix.browser }}
+          name: cucumber-json-report-api
           path: target/cucumber/cucumber.json
 
       - name: Archive Cucumber HTML reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cucumber-html-reports-${{ matrix.browser }}
+          name: cucumber-html-reports-api
           path: target/cucumber-reports/

@@ -92,6 +92,17 @@
             <version>3.13.1</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-schema-validator</artifactId>
+            <version>4.2.0</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>5.4.0</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -101,7 +112,7 @@
                 <version>3.3.1</version>
                 <configuration>
                     <includes>
-                        <include>**/TestRunner.java</include>
+                        <include>**/runners/*.java</include>
                     </includes>
                     <testFailureIgnore>true</testFailureIgnore>
                     <reportsDirectory>${project.basedir}/cucumber-reports/json</reportsDirectory>

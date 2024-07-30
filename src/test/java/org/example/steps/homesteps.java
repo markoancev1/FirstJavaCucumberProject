@@ -3,6 +3,7 @@ package org.example.steps;
 import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.Given;
+import org.example.hooks.Hooks;
 import org.openqa.selenium.WebDriver;
 import org.junit.Assert;
 import org.example.pages.HomePage;
