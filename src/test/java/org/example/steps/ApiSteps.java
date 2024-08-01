@@ -1,16 +1,19 @@
 package org.example.steps;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.restassured.RestAssured;
 import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
+import org.example.pojo.Activity;
 import org.example.utils.ApiEndpoint;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -81,5 +84,35 @@ public class ApiSteps {
         Assert.assertNotNull("Endpoint is null", endpoint);
         response = RestAssured.get(endpoint.getUrl());
         Assert.assertNotNull("Response is null", response);
+    }
+
+    @Given("I perform a POST request to {string} with query params")
+    public void iPerformAPOSTRequestToWithQueryParams(String enumName) throws JsonProcessingException {
+        ApiEndpoint endpoint = ApiEndpoint.valueOf(enumName.toUpperCase());
+        Assert.assertNotNull("Endpoint is null", endpoint);
+
+        Activity activity = new Activity();
+        activity.setId(31);
+        activity.setTitle("Activity 30");
+        activity.setDueDate("2024-07-30T11:58:38.538Z");
+        activity.setCompleted(false);
+
+        String jsonBody = activity.serialize();
+
+        response = RestAssured.given()
+                .contentType("application/json")
+                .body(jsonBody)
+                .post(endpoint.getUrl());
+    }
+
+    @And("check response body information is correct")
+    public void checkResponseBodyInformationIsCorrect() throws JsonProcessingException {
+        String responseBody = response.getBody().asString();
+        Activity responseActivity = Activity.deserialize(responseBody);
+
+        Assert.assertEquals(31, responseActivity.getId());
+        Assert.assertEquals("Activity 30", responseActivity.getTitle());
+        Assert.assertEquals("2024-07-30T11:58:38.538Z", responseActivity.getDueDate());
+        Assert.assertFalse(responseActivity.isCompleted());
     }
 }

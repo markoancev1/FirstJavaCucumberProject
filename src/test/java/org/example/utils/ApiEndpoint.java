@@ -1,5 +1,8 @@
 package org.example.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Map;
 
 /**
@@ -62,5 +65,16 @@ public enum ApiEndpoint {
         urlWithParams.deleteCharAt(urlWithParams.length() - 1);
 
         return urlWithParams.toString();
+    }
+
+    /**
+     * Converts the Activity object to a JSON string.
+     *
+     * @return JSON representation of the Activity object.
+     * @throws JsonProcessingException if the object cannot be converted to JSON.
+     */
+    public String toJson() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.writeValueAsString(this);
     }
 }

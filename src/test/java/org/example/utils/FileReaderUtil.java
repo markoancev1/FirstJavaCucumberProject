@@ -51,7 +51,7 @@ public class FileReaderUtil {
             }
 
             for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue; // Skip header row
+                if (row.getRowNum() == 0) continue;
                 Map<String, String> rowData = new HashMap<>();
                 for (String columnName : columnNames) {
                     Cell cell = row.getCell(columnIndexMap.get(columnName));
