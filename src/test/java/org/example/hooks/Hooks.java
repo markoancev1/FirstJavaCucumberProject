@@ -17,20 +17,24 @@ import java.util.Optional;
 
 public class Hooks {
 
-    private static WebDriver driver;
     private static final Logger logger = LoggerFactory.getLogger(Hooks.class);
+    private static WebDriver driver;
 
     @Before
     public synchronized void setupDriver() {
         if (driver == null) {
             String browser = System.getProperty("browser", "chrome");
-            String connectionTypeParam = System.getProperty("connection", "3G"); // Default to 3G
-            NetworkConditions conditions = determineNetworkConditions(connectionTypeParam);
-
-            logger.info("Setting up WebDriver for {} with {} connection", browser, connectionTypeParam);
+            logger.info("Setting up WebDriver for {}", browser);
             try {
                 initializeDriver(browser);
-                setupNetworkConditions(conditions);
+
+                // Only set network conditions if the driver is a ChromeDriver
+                if (driver instanceof ChromeDriver) {
+                    String connectionTypeParam = System.getProperty("connection", "3G"); // Default to 3G
+                    NetworkConditions conditions = determineNetworkConditions(connectionTypeParam);
+                    setupNetworkConditions(conditions);
+                }
+
                 driver.get("https://practicetestautomation.com");
             } catch (Exception e) {
                 logger.error("Failed to initialize WebDriver", e);
@@ -51,18 +55,19 @@ public class Hooks {
     private void setupNetworkConditions(NetworkConditions conditions) {
         if (driver instanceof ChromeDriver) {
             DevTools devTools = ((ChromeDriver) driver).getDevTools();
-            try {
-                devTools.createSession();
-                devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
-                devTools.send(Network.emulateNetworkConditions(
-                        false, conditions.latency, conditions.downloadThroughput, conditions.uploadThroughput,
-                        Optional.of(conditions.connectionType), Optional.of(conditions.packetLoss),
-                        Optional.of(0), Optional.of(false)));
-                logger.info("Network conditions set to {}", conditions.connectionType);
-            } catch (Exception e) {
-                logger.error("Failed to set network conditions", e);
-                throw new RuntimeException("Network condition setup failed", e);
-            }
+            devTools.createSession();
+            devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+            devTools.send(Network.emulateNetworkConditions(
+                    false,
+                    conditions.latency,
+                    conditions.downloadThroughput,
+                    conditions.uploadThroughput,
+                    Optional.of(conditions.connectionType),
+                    Optional.of(conditions.packetLoss),
+                    Optional.of(0),
+                    Optional.of(false)
+            ));
+            logger.info("Network conditions set to {}", conditions.connectionType);
         }
     }
 
@@ -103,33 +108,19 @@ public class Hooks {
         NetworkConditions conditions = new NetworkConditions();
         switch (connectionParam.toUpperCase()) {
             case "2G":
-                conditions.connectionType = ConnectionType.CELLULAR2G;
-                conditions.latency = 500;
-                conditions.downloadThroughput = 250 * 1024;
-                conditions.uploadThroughput = 50 * 1024;
-                conditions.packetLoss = 0.5;
-                break;
-            case "3G":
-                conditions.connectionType = ConnectionType.CELLULAR3G;
-                conditions.latency = 250;
-                conditions.downloadThroughput = 750 * 1024;
-                conditions.uploadThroughput = 250 * 1024;
-                conditions.packetLoss = 0.2;
+                conditions.setNetworkConditions(ConnectionType.CELLULAR2G, 500, 250 * 1024, 50 * 1024, 0.5);
                 break;
             case "4G":
-                conditions.connectionType = ConnectionType.CELLULAR4G;
-                conditions.latency = 100;
-                conditions.downloadThroughput = 4000 * 1024;
-                conditions.uploadThroughput = 3000 * 1024;
-                conditions.packetLoss = 0.1;
+                conditions.setNetworkConditions(ConnectionType.CELLULAR4G, 100, 4000 * 1024, 3000 * 1024, 0.1);
+                break;
+            case "WIFI":
+                conditions.setNetworkConditions(ConnectionType.WIFI, 30, 10000 * 1024, 5000 * 1024, 0.01);
+                break;
+            case "ETHERNET":
+                conditions.setNetworkConditions(ConnectionType.ETHERNET, 20, 100000 * 1024, 50000 * 1024, 0.005);
                 break;
             default:
-                // Default to 3G if unknown
-                conditions.connectionType = ConnectionType.CELLULAR3G;
-                conditions.latency = 250;
-                conditions.downloadThroughput = 750 * 1024;
-                conditions.uploadThroughput = 250 * 1024;
-                conditions.packetLoss = 0.2;
+                conditions.setNetworkConditions(ConnectionType.CELLULAR3G, 250, 750 * 1024, 250 * 1024, 0.2);
                 break;
         }
         logger.debug("Network conditions set for {}: Latency = {} ms, Download = {} bps, Upload = {} bps, Packet Loss = {}%",
@@ -144,5 +135,13 @@ public class Hooks {
         int downloadThroughput;
         int uploadThroughput;
         double packetLoss;
+
+        void setNetworkConditions(ConnectionType type, int latency, int download, int upload, double packetLoss) {
+            this.connectionType = type;
+            this.latency = latency;
+            this.downloadThroughput = download;
+            this.uploadThroughput = upload;
+            this.packetLoss = packetLoss;
+        }
     }
 }

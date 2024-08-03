@@ -1,4 +1,4 @@
-name: Java CI with Maven
+name: Java Firefox CI with Maven
 
 on: [push, pull_request]
 jobs:
@@ -9,8 +9,7 @@ jobs:
       fail-fast: false
       matrix:
         java-version: [22]
-        browser: [chrome, firefox]
-        network: [2G, 3G, 4G]
+        browser: [firefox]
 
     steps:
       - name: Checkout repository
@@ -30,12 +29,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Set up Chrome
-        if: matrix.browser == 'chrome'
-        uses: browser-actions/setup-chrome@latest
-
       - name: Set up Firefox
-        if: matrix.browser == 'firefox'
         uses: browser-actions/setup-firefox@latest
 
       - name: Ensure target and cucumber directories exist
@@ -48,37 +42,29 @@ jobs:
 
       - name: Run tests
         run: |
-          if [[ "${{ matrix.browser }}" == "chrome" ]]; then
-            mvn -Dtest=CucumberFeatureTest test -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
-          else
-            mvn -Dtest=CucumberFeatureTest test -Dbrowser=${{ matrix.browser }}
-          fi
+          mvn -Dtest=CucumberFeatureTest test -Dbrowser=${{ matrix.browser }}
 
       - name: Archive log file
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: app-log-${{ matrix.browser }}-${{ matrix.network }}
+          name: app-log-${{ matrix.browser }}
           path: app.log
 
       - name: Generate Cucumber HTML report
         run: |
-          if [[ "${{ matrix.browser }}" == "chrome" ]]; then
-            mvn -Dtest=CucumberFeatureTest verify -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
-          else
-            mvn -Dtest=CucumberFeatureTest verify -Dbrowser=${{ matrix.browser }}
-          fi
+          mvn -Dtest=CucumberFeatureTest verify -Dbrowser=${{ matrix.browser }}
 
       - name: Archive Cucumber JSON report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cucumber-json-report-${{ matrix.browser }}-${{ matrix.network }}
+          name: cucumber-json-report-${{ matrix.browser }}
           path: target/cucumber/cucumber.json
 
       - name: Archive Cucumber HTML reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cucumber-html-reports-${{ matrix.browser }}-${{ matrix.network }}
+          name: cucumber-html-reports-${{ matrix.browser }}
           path: target/cucumber-reports/
