@@ -104,24 +104,24 @@ public class Hooks {
         switch (connectionParam.toUpperCase()) {
             case "2G":
                 conditions.connectionType = ConnectionType.CELLULAR2G;
-                conditions.latency = 500; // High latency
-                conditions.downloadThroughput = 250 * 1024; // Very slow download speed
-                conditions.uploadThroughput = 50 * 1024; // Very slow upload speed
-                conditions.packetLoss = 0.5; // 0.5% packet loss
+                conditions.latency = 500;
+                conditions.downloadThroughput = 250 * 1024;
+                conditions.uploadThroughput = 50 * 1024;
+                conditions.packetLoss = 0.5;
                 break;
             case "3G":
                 conditions.connectionType = ConnectionType.CELLULAR3G;
-                conditions.latency = 250; // Moderate latency
-                conditions.downloadThroughput = 750 * 1024; // Moderate download speed
-                conditions.uploadThroughput = 250 * 1024; // Moderate upload speed
-                conditions.packetLoss = 0.2; // 0.2% packet loss
+                conditions.latency = 250;
+                conditions.downloadThroughput = 750 * 1024;
+                conditions.uploadThroughput = 250 * 1024;
+                conditions.packetLoss = 0.2;
                 break;
             case "4G":
                 conditions.connectionType = ConnectionType.CELLULAR4G;
-                conditions.latency = 100; // Lower latency
-                conditions.downloadThroughput = 4000 * 1024; // Fast download speed
-                conditions.uploadThroughput = 3000 * 1024; // Fast upload speed
-                conditions.packetLoss = 0.1; // Minimal packet loss
+                conditions.latency = 100;
+                conditions.downloadThroughput = 4000 * 1024;
+                conditions.uploadThroughput = 3000 * 1024;
+                conditions.packetLoss = 0.1;
                 break;
             default:
                 // Default to 3G if unknown
@@ -132,6 +132,8 @@ public class Hooks {
                 conditions.packetLoss = 0.2;
                 break;
         }
+        logger.debug("Network conditions set for {}: Latency = {} ms, Download = {} bps, Upload = {} bps, Packet Loss = {}%",
+                connectionParam, conditions.latency, conditions.downloadThroughput, conditions.uploadThroughput, conditions.packetLoss * 100);
         return conditions;
     }
 
