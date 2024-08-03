@@ -1,0 +1,51 @@
+{
+  "browsers": {
+    "chrome": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.100 Safari/537.36",
+      "headless": true,
+      "additionalArgs": ["--disable-gpu", "--no-sandbox"]
+    },
+    "firefox": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0",
+      "headless": true,
+      "additionalArgs": ["--safe-mode"]
+    }
+  },
+  "networkConditions": {
+    "2G": {
+      "connectionType": "CELLULAR2G",
+      "latency": 500,
+      "downloadThroughput": 256000,
+      "uploadThroughput": 51200,
+      "packetLoss": 0.5
+    },
+    "3G": {
+      "connectionType": "CELLULAR3G",
+      "latency": 250,
+      "downloadThroughput": 768000,
+      "uploadThroughput": 256000,
+      "packetLoss": 0.2
+    },
+    "4G": {
+      "connectionType": "CELLULAR4G",
+      "latency": 100,
+      "downloadThroughput": 4096000,
+      "uploadThroughput": 3072000,
+      "packetLoss": 0.1
+    },
+    "WIFI": {
+      "connectionType": "WIFI",
+      "latency": 30,
+      "downloadThroughput": 10240000,
+      "uploadThroughput": 5120000,
+      "packetLoss": 0.01
+    },
+    "ETHERNET": {
+      "connectionType": "ETHERNET",
+      "latency": 20,
+      "downloadThroughput": 102400000,
+      "uploadThroughput": 51200000,
+      "packetLoss": 0.005
+    }
+  }
+}

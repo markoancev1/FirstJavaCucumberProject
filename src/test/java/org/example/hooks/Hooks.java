@@ -1,5 +1,7 @@
 package org.example.hooks;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import org.openqa.selenium.WebDriver;
@@ -13,12 +15,26 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Optional;
 
 public class Hooks {
 
     private static final Logger logger = LoggerFactory.getLogger(Hooks.class);
     private static WebDriver driver;
+    private static final JsonNode configJson;
+
+    static {
+        // Load the JSON configuration at class loading time
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            configJson = mapper.readTree(new File("config.json"));
+        } catch (IOException e) {
+            logger.error("Failed to load network conditions JSON", e);
+            throw new RuntimeException("Failed to load network conditions", e);
+        }
+    }
 
     @Before
     public synchronized void setupDriver() {
@@ -28,9 +44,8 @@ public class Hooks {
             try {
                 initializeDriver(browser);
 
-                // Only set network conditions if the driver is a ChromeDriver
                 if (driver instanceof ChromeDriver) {
-                    String connectionTypeParam = System.getProperty("connection", "3G"); // Default to 3G
+                    String connectionTypeParam = System.getProperty("connection", "3G");
                     NetworkConditions conditions = determineNetworkConditions(connectionTypeParam);
                     setupNetworkConditions(conditions);
                 }
@@ -44,12 +59,52 @@ public class Hooks {
     }
 
     private void initializeDriver(String browser) {
+        JsonNode browserConfig = configJson.get("browsers").get(browser.toLowerCase());
+
+        if (browserConfig == null) {
+            throw new RuntimeException("Unsupported browser: " + browser);
+        }
+
         if ("firefox".equalsIgnoreCase(browser)) {
-            driver = createFirefoxDriver();
+            driver = createFirefoxDriver(browserConfig);
         } else {
-            driver = createChromeDriver();
+            driver = createChromeDriver(browserConfig);
         }
         logger.info("WebDriver initialized for browser: {}", browser);
+    }
+
+    private WebDriver createFirefoxDriver(JsonNode browserConfig) {
+        logger.info("Creating Firefox driver with specified options");
+        FirefoxOptions options = new FirefoxOptions();
+
+        if (browserConfig.get("headless").asBoolean()) {
+            options.addArguments("--headless");
+        }
+
+        options.addPreference("general.useragent.override", browserConfig.get("userAgent").asText());
+
+        for (JsonNode arg : browserConfig.get("additionalArgs")) {
+            options.addArguments(arg.asText());
+        }
+
+        return new FirefoxDriver(options);
+    }
+
+    private WebDriver createChromeDriver(JsonNode browserConfig) {
+        logger.info("Creating Chrome driver with specified options");
+        ChromeOptions options = new ChromeOptions();
+
+        if (browserConfig.get("headless").asBoolean()) {
+            options.addArguments("--headless");
+        }
+
+        options.addArguments("--user-agent=" + browserConfig.get("userAgent").asText());
+
+        for (JsonNode arg : browserConfig.get("additionalArgs")) {
+            options.addArguments(arg.asText());
+        }
+
+        return new ChromeDriver(options);
     }
 
     private void setupNetworkConditions(NetworkConditions conditions) {
@@ -69,21 +124,6 @@ public class Hooks {
             ));
             logger.info("Network conditions set to {}", conditions.connectionType);
         }
-    }
-
-    private WebDriver createFirefoxDriver() {
-        logger.info("Creating Firefox driver with headless options");
-        FirefoxOptions options = new FirefoxOptions();
-        options.addArguments("--headless");
-        return new FirefoxDriver(options);
-    }
-
-    private WebDriver createChromeDriver() {
-        logger.info("Creating Chrome driver with headless options");
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--remote-allow-origins=*");
-        options.addArguments("--headless");
-        return new ChromeDriver(options);
     }
 
     @After
@@ -106,23 +146,19 @@ public class Hooks {
 
     private NetworkConditions determineNetworkConditions(String connectionParam) {
         NetworkConditions conditions = new NetworkConditions();
-        switch (connectionParam.toUpperCase()) {
-            case "2G":
-                conditions.setNetworkConditions(ConnectionType.CELLULAR2G, 500, 250 * 1024, 50 * 1024, 0.5);
-                break;
-            case "4G":
-                conditions.setNetworkConditions(ConnectionType.CELLULAR4G, 100, 4000 * 1024, 3000 * 1024, 0.1);
-                break;
-            case "WIFI":
-                conditions.setNetworkConditions(ConnectionType.WIFI, 30, 10000 * 1024, 5000 * 1024, 0.01);
-                break;
-            case "ETHERNET":
-                conditions.setNetworkConditions(ConnectionType.ETHERNET, 20, 100000 * 1024, 50000 * 1024, 0.005);
-                break;
-            default:
-                conditions.setNetworkConditions(ConnectionType.CELLULAR3G, 250, 750 * 1024, 250 * 1024, 0.2);
-                break;
+        JsonNode conditionNode = configJson.get("networkConditions").get(connectionParam.toUpperCase());
+        if (conditionNode == null) {
+            conditionNode = configJson.get("networkConditions").get("3G"); // Default to 3G if not found
         }
+
+        conditions.setNetworkConditions(
+                ConnectionType.valueOf(conditionNode.get("connectionType").asText()),
+                conditionNode.get("latency").asInt(),
+                conditionNode.get("downloadThroughput").asInt(),
+                conditionNode.get("uploadThroughput").asInt(),
+                conditionNode.get("packetLoss").asDouble()
+        );
+
         logger.debug("Network conditions set for {}: Latency = {} ms, Download = {} bps, Upload = {} bps, Packet Loss = {}%",
                 connectionParam, conditions.latency, conditions.downloadThroughput, conditions.uploadThroughput, conditions.packetLoss * 100);
         return conditions;
