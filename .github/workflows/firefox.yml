@@ -74,7 +74,6 @@ jobs:
         run: |
           mvn -Dtest=CucumberFeatureTest site -Dbrowser=${{ matrix.browser }}
 
-
       - name: Archive Surefire HTML reports
         if: always()
         uses: actions/upload-artifact@v4

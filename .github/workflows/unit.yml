@@ -47,7 +47,6 @@ jobs:
         run: |
           mvn -Dtest=UnitTestsSuite site
 
-
       - name: Archive Surefire HTML reports
         if: always()
         uses: actions/upload-artifact@v4
