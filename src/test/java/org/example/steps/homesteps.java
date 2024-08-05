@@ -5,7 +5,7 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.Given;
 import org.example.hooks.Hooks;
 import org.openqa.selenium.WebDriver;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions; // Updated import for JUnit 5
 import org.example.pages.HomePage;
 import org.example.utils.FileReaderUtil;
 import com.opencsv.exceptions.CsvException;
@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+
 public class homesteps {
 
     WebDriver driver;
@@ -23,8 +24,8 @@ public class homesteps {
     public void iHaveAConfiguredCucumberJVMProject() {
         driver = Hooks.getDriver();
         homePage = new HomePage(driver);
-        Assert.assertNotNull(driver);
-        Assert.assertNotNull(homePage);
+        Assertions.assertNotNull(driver);
+        Assertions.assertNotNull(homePage);
     }
 
     @When("I run the tests")
@@ -45,7 +46,7 @@ public class homesteps {
         for (Map<String, String> row : columnData) {
             for (String columnNameString : columnNames) {
                 String emailString = row.get(columnNameString);
-                Assert.assertNotNull(emailString);
+                Assertions.assertNotNull(emailString);
             }
         }
     }

@@ -1,6 +1,6 @@
 package org.example.utils;
 
-import com.opencsv.CSVReaderHeaderAware;
+import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -9,7 +9,6 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
-
 
 public class FileReaderUtil {
     public static List<Map<String, String>> readFile(String filePath, List<String> columnNames) throws IOException, CsvException {
@@ -24,12 +23,39 @@ public class FileReaderUtil {
 
     private static List<Map<String, String>> readCSV(String filePath, List<String> columnNames) throws IOException, CsvException {
         List<Map<String, String>> columnData = new ArrayList<>();
-        try (CSVReaderHeaderAware csvReader = new CSVReaderHeaderAware(new FileReader(filePath))) {
-            Map<String, String> values;
-            while ((values = csvReader.readMap()) != null) {
+        try (CSVReader csvReader = new CSVReader(new FileReader(filePath))) {
+            // Read headers
+            String[] actualHeaders = csvReader.readNext();
+            if (actualHeaders == null) {
+                throw new CsvException("CSV file is empty");
+            }
+
+            List<String> actualHeaderList = Arrays.asList(actualHeaders);
+
+            // Ensure at least one expected header is present to consider it a valid CSV format
+            boolean validFormat = false;
+            for (String expectedHeader : columnNames) {
+                if (actualHeaderList.contains(expectedHeader)) {
+                    validFormat = true;
+                    break;
+                }
+            }
+
+            if (!validFormat) {
+                throw new CsvException("Invalid CSV header format");
+            }
+
+            // Read data
+            String[] values;
+            while ((values = csvReader.readNext()) != null) {
                 Map<String, String> row = new HashMap<>();
                 for (String columnName : columnNames) {
-                    row.put(columnName, values.get(columnName));
+                    int index = actualHeaderList.indexOf(columnName);
+                    if (index != -1 && index < values.length) {
+                        row.put(columnName, values[index]);
+                    } else {
+                        row.put(columnName, null);  // Handle missing columns by setting null
+                    }
                 }
                 columnData.add(row);
             }
@@ -42,35 +68,42 @@ public class FileReaderUtil {
         try (FileInputStream fis = new FileInputStream(filePath);
              Workbook workbook = new XSSFWorkbook(fis)) {
             Sheet sheet = workbook.getSheetAt(0);
+
+            // Check if the sheet is empty or does not exist
+            if (sheet == null || sheet.getPhysicalNumberOfRows() == 0) {
+                return columnData; // Return empty list
+            }
+
             Row headerRow = sheet.getRow(0);
-            Map<String, Integer> columnIndexMap = new HashMap<>();
+            if (headerRow == null) {
+                return columnData; // Return empty list if there's no header
+            }
+
+            // Map column names to indices
+            Map<String, Integer> headerMap = new HashMap<>();
             for (Cell cell : headerRow) {
-                if (columnNames.contains(cell.getStringCellValue())) {
-                    columnIndexMap.put(cell.getStringCellValue(), cell.getColumnIndex());
+                String headerName = cell.getStringCellValue();
+                if (columnNames.contains(headerName)) {
+                    headerMap.put(headerName, cell.getColumnIndex());
                 }
             }
 
-            for (Row row : sheet) {
-                if (row.getRowNum() == 0) continue;
+            // Read data rows
+            for (int i = 1; i < sheet.getPhysicalNumberOfRows(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
                 Map<String, String> rowData = new HashMap<>();
                 for (String columnName : columnNames) {
-                    Cell cell = row.getCell(columnIndexMap.get(columnName));
-                    if (cell != null) {
-                        switch (cell.getCellType()) {
-                            case STRING:
-                                rowData.put(columnName, cell.getStringCellValue());
-                                break;
-                            case NUMERIC:
-                                rowData.put(columnName, String.valueOf(cell.getNumericCellValue()));
-                                break;
-                            case BOOLEAN:
-                                rowData.put(columnName, String.valueOf(cell.getBooleanCellValue()));
-                                break;
-                            default:
-                                rowData.put(columnName, "");
+                    Integer colIndex = headerMap.get(columnName);
+                    if (colIndex != null) {
+                        Cell cell = row.getCell(colIndex);
+                        if (cell != null) {
+                            rowData.put(columnName, cell.toString());
+                        } else {
+                            rowData.put(columnName, null); // Handle missing cells
                         }
                     } else {
-                        rowData.put(columnName, "");
+                        rowData.put(columnName, null); // Handle missing columns
                     }
                 }
                 columnData.add(rowData);
