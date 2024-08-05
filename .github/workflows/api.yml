@@ -30,6 +30,7 @@ jobs:
       - name: Ensure target and cucumber directories exist
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber
+          mkdir -p ${GITHUB_WORKSPACE}/target/site
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber-reports
           mkdir -p ${GITHUB_WORKSPACE}/cucumber/
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/json
@@ -45,19 +46,31 @@ jobs:
           name: app-log-api
           path: app.log
 
-      - name: Generate Cucumber HTML report
+      - name: Generate Api HTML report
         run: mvn -Dtest=ApiFeatureTest verify
 
-      - name: Archive Cucumber JSON report
+      - name: Archive Api JSON report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-json-report-api
           path: target/cucumber/cucumber.json
 
-      - name: Archive Cucumber HTML reports
+      - name: Archive Api HTML reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-html-reports-api
           path: target/cucumber-reports/
+
+      - name: Generate Site HTML report
+        run: |
+          mvn -Dtest=ApiFeatureTest site
+
+
+      - name: Archive Surefire HTML reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-html-reports
+          path: target/site/

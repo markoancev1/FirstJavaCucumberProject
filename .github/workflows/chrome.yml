@@ -36,6 +36,7 @@ jobs:
       - name: Ensure target and cucumber directories exist
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber
+          mkdir -p ${GITHUB_WORKSPACE}/target/site
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber-reports
           mkdir -p ${GITHUB_WORKSPACE}/cucumber/
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/json
@@ -69,3 +70,14 @@ jobs:
         with:
           name: cucumber-html-reports-${{ matrix.browser }}-${{ matrix.network }}
           path: target/cucumber-reports/
+
+      - name: Generate Site HTML report
+        run: |
+          mvn -Dtest=CucumberFeatureTest site -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
+
+      - name: Archive Surefire HTML reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-html-reports-${{ matrix.browser }}-${{ matrix.network }}
+          path: target/site/

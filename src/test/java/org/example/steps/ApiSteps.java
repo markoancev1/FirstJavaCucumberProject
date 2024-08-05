@@ -9,7 +9,7 @@ import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.example.pojo.Activity;
 import org.example.utils.ApiEndpoint;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +29,9 @@ public class ApiSteps {
      */
     @Then("the status code is {int}")
     public void theStatusCodeIs(int statusCode) {
-        Assert.assertNotNull("Response is null", response);
-        Assert.assertEquals("Status code does not match", statusCode, response.getStatusCode());
+        logger.info("Verifying that the status code is {}", statusCode);
+        Assertions.assertNotNull(response, "Response is null");
+        Assertions.assertEquals(statusCode, response.getStatusCode(), "Status code does not match");
     }
 
     /**
@@ -43,15 +44,16 @@ public class ApiSteps {
      */
     @And("the response body contains {string}, {string}, {string}, {string}")
     public void theResponseBodyContains(String arg0, String arg1, String arg2, String arg3) {
-        Assert.assertNotNull("Response is null", response);
+        logger.info("Checking if response body contains: {}, {}, {}, {}", arg0, arg1, arg2, arg3);
+        Assertions.assertNotNull(response, "Response is null");
         String responseBody = response.getBody().asString();
-        logger.info(responseBody);
+        logger.debug("Response body: {}", responseBody);
         assertResponseBodyContains(responseBody, arg0, arg1, arg2, arg3);
     }
 
     private void assertResponseBodyContains(String responseBody, String... args) {
         for (String arg : args) {
-            Assert.assertTrue("Response body does not contain: " + arg, responseBody.contains(arg));
+            Assertions.assertTrue(responseBody.contains(arg), "Response body does not contain: " + arg);
         }
     }
 
@@ -62,9 +64,10 @@ public class ApiSteps {
      */
     @And("the number of objects in the response is {int}")
     public void theNumberOfObjectsInTheResponseIs(int count) {
-        Assert.assertNotNull("Response is null", response);
+        logger.info("Verifying that the number of objects in the response is {}", count);
+        Assertions.assertNotNull(response, "Response is null");
         List<Object> objects = getResponseObjects();
-        Assert.assertEquals("Number of objects does not match", count, objects.size());
+        Assertions.assertEquals(count, objects.size(), "Number of objects does not match");
     }
 
     private List<Object> getResponseObjects() {
@@ -79,16 +82,24 @@ public class ApiSteps {
      */
     @Given("I perform a GET request to {string} with query params")
     public void iPerformAGETRequestToWithQueryParams(String enumName) {
+        logger.info("Performing GET request to endpoint: {}", enumName);
         ApiEndpoint endpoint = ApiEndpoint.valueOf(enumName.toUpperCase());
-        Assert.assertNotNull("Endpoint is null", endpoint);
+        Assertions.assertNotNull(endpoint, "Endpoint is null");
         response = RestAssured.get(endpoint.getUrl());
-        Assert.assertNotNull("Response is null", response);
+        Assertions.assertNotNull(response, "Response is null");
+        logger.info("Received response with status code: {}", response.getStatusCode());
     }
 
+    /**
+     * Performs a POST request to the specified API endpoint.
+     *
+     * @param enumName the name of the API endpoint enum
+     */
     @Given("I perform a POST request to {string} with query params")
     public void iPerformAPOSTRequestToWithQueryParams(String enumName) throws JsonProcessingException {
+        logger.info("Performing POST request to endpoint: {}", enumName);
         ApiEndpoint endpoint = ApiEndpoint.valueOf(enumName.toUpperCase());
-        Assert.assertNotNull("Endpoint is null", endpoint);
+        Assertions.assertNotNull(endpoint, "Endpoint is null");
 
         Activity activity = new Activity();
         activity.setId(31);
@@ -97,21 +108,31 @@ public class ApiSteps {
         activity.setCompleted(false);
 
         String jsonBody = activity.serialize();
+        logger.debug("POST request body: {}", jsonBody);
 
         response = RestAssured.given()
                 .contentType("application/json")
                 .body(jsonBody)
                 .post(endpoint.getUrl());
+        Assertions.assertNotNull(response, "Response is null");
+        logger.info("Received response with status code: {}", response.getStatusCode());
     }
 
+    /**
+     * Checks if the response body information is correct.
+     *
+     * @throws JsonProcessingException if there is an error processing JSON
+     */
     @And("check response body information is correct")
     public void checkResponseBodyInformationIsCorrect() throws JsonProcessingException {
+        logger.info("Checking if the response body information is correct");
         String responseBody = response.getBody().asString();
         Activity responseActivity = Activity.deserialize(responseBody);
 
-        Assert.assertEquals(31, responseActivity.getId());
-        Assert.assertEquals("Activity 30", responseActivity.getTitle());
-        Assert.assertEquals("2024-07-30T11:58:38.538Z", responseActivity.getDueDate());
-        Assert.assertFalse(responseActivity.isCompleted());
+        Assertions.assertEquals(31, responseActivity.getId(), "Activity ID does not match");
+        Assertions.assertEquals("Activity 30", responseActivity.getTitle(), "Activity title does not match");
+        Assertions.assertEquals("2024-07-30T11:58:38.538Z", responseActivity.getDueDate(), "Activity due date does not match");
+        Assertions.assertFalse(responseActivity.isCompleted(), "Activity should not be completed");
+        logger.info("Response body information is correct");
     }
 }

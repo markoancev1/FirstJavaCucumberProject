@@ -28,6 +28,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
+      - name: Ensure target and site directory exist
+        run: |
+          mkdir -p ${GITHUB_WORKSPACE}/target/site
+
       - name: Run tests
         run: |
           mvn -Dtest=UnitTestsSuite test
@@ -38,3 +42,15 @@ jobs:
         with:
           name: app-log-unit-tests
           path: app.log
+
+      - name: Generate Site HTML report
+        run: |
+          mvn -Dtest=UnitTestsSuite site
+
+
+      - name: Archive Surefire HTML reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-html-report
+          path: target/site/
