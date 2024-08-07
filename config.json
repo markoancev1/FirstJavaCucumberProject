@@ -33,6 +33,13 @@
       "uploadThroughput": 3072000,
       "packetLoss": 0.1
     },
+    "5G": {
+      "connectionType": "CELLULAR5G",
+      "latency": 50,
+      "downloadThroughput": 20480000,
+      "uploadThroughput": 10240000,
+      "packetLoss": 0.05
+    },
     "WIFI": {
       "connectionType": "WIFI",
       "latency": 30,

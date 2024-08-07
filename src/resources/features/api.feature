@@ -10,3 +10,16 @@ Feature: Api Feature
     Then the status code is 200
     And check response body information is correct
 
+  Scenario Outline: Test GET request with multiple IDs
+    Given I perform a GET request to "ACTIVITIES_BY_ID" with <ID>
+    Then the status code is 200
+    And the response body contains "id", "title", "dueDate", "completed"
+
+    Examples:
+      | ID  |
+      | 5   |
+      | 11  |
+      | 19  |
+
+  Scenario: Perform gradual load test on API
+    Given I perform a gradual load test on "ACTIVITIES" starting with 10 users up to 20 users incrementing by 10 every 10 seconds with 10 requests each
