@@ -2,7 +2,10 @@ package org.example.utils;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvException;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.FileInputStream;
@@ -10,7 +13,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
 
-public class FileReaderUtil {
+public class FileReaderUtils {
     public static List<Map<String, String>> readFile(String filePath, List<String> columnNames) throws IOException, CsvException {
         if (filePath.endsWith(".csv")) {
             return readCSV(filePath, columnNames);

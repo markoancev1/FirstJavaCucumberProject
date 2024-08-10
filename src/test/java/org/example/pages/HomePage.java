@@ -10,13 +10,14 @@ public class HomePage extends BasePage{
     }
 
     // Locators
-    By ulNavbar = By.id("menu-primary-items");
-    By imgPicture = By.cssSelector("img.wp-image-91");
+    private static final By NAVBAR = By.id("menu-primary-items");
+    private static final By MAIN_IMAGE = By.cssSelector("img.wp-image-91");
+    private static final By NAVBAR_ITEMS = By.cssSelector("#menu-primary-items li");
 
     // Methods
     public void checkImageVisibility() {
-        waitForElementsToBeVisible(imgPicture, ulNavbar);
-        boolean allDisplayed = areElementsDisplayed(imgPicture, ulNavbar);
+        waitForElementsToBeVisible(MAIN_IMAGE, NAVBAR);
+        boolean allDisplayed = areElementsDisplayed(MAIN_IMAGE, NAVBAR);
         Assert.assertTrue(allDisplayed);
     }
 }

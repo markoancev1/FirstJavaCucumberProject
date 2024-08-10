@@ -3,7 +3,7 @@ package org.example.utils.tests;
 import com.opencsv.exceptions.CsvException;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.example.utils.FileReaderUtil;
+import org.example.utils.FileReaderUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -54,7 +54,7 @@ public class FileReaderUtilTest {
         logger.info("Starting testReadValidFile for {}...", fileType);
         fileCreationLogic.run();
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertEquals(2, data.size(), "Expected two rows of data");
@@ -91,7 +91,7 @@ public class FileReaderUtilTest {
             }
         }
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertEquals(1, data.size(), "Expected one row of data");
@@ -120,7 +120,7 @@ public class FileReaderUtilTest {
             }
         }
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertTrue(data.isEmpty(), "Expected the data to be empty for an empty " + fileType);
@@ -160,7 +160,7 @@ public class FileReaderUtilTest {
             }
         }
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(filePath.toString() + "." + fileType, COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertEquals(1, data.size(), "Expected one row of data");
@@ -176,7 +176,7 @@ public class FileReaderUtilTest {
     @Test
     public void testNonExistentFile() {
         logger.info("Starting testNonExistentFile...");
-        assertThrows(IOException.class, () -> FileReaderUtil.readFile("non_existent_file.csv", COLUMN_NAMES));
+        assertThrows(IOException.class, () -> FileReaderUtils.readFile("non_existent_file.csv", COLUMN_NAMES));
         logger.info("testNonExistentFile completed successfully.");
     }
 
@@ -187,7 +187,7 @@ public class FileReaderUtilTest {
         Path invalidCsvPath = Files.createTempFile("invalid", ".csv");
         Files.write(invalidCsvPath, Arrays.asList("InvalidHeader1,InvalidHeader2", "SomeData1,SomeData2"));
 
-        assertThrows(CsvException.class, () -> FileReaderUtil.readFile(invalidCsvPath.toString(), COLUMN_NAMES));
+        assertThrows(CsvException.class, () -> FileReaderUtils.readFile(invalidCsvPath.toString(), COLUMN_NAMES));
 
         logger.info("testInvalidCSVHeaderFormat completed successfully.");
     }
@@ -202,7 +202,7 @@ public class FileReaderUtilTest {
                 "Jane,25,Los Angeles,Extra"
         ));
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(malformedCsvPath.toString(), COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(malformedCsvPath.toString(), COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertEquals(2, data.size(), "Expected two rows of data");
@@ -222,7 +222,7 @@ public class FileReaderUtilTest {
                 "Marie,25,Los Ángeles"
         ));
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(specialCharCsvPath.toString(), COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(specialCharCsvPath.toString(), COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertEquals(2, data.size(), "Expected two rows of data");
@@ -243,7 +243,7 @@ public class FileReaderUtilTest {
             }
         }
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(largeCsvPath.toString(), COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(largeCsvPath.toString(), COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertEquals(10000, data.size(), "Expected 10000 rows of data");
@@ -270,7 +270,7 @@ public class FileReaderUtilTest {
 
         File largeExcelFile = createLargeExcelFile(tempDir.resolve("large_test.xlsx").toFile());
 
-        List<Map<String, String>> data = FileReaderUtil.readFile(largeExcelFile.getAbsolutePath(), COLUMN_NAMES);
+        List<Map<String, String>> data = FileReaderUtils.readFile(largeExcelFile.getAbsolutePath(), COLUMN_NAMES);
 
         assertNotNull(data, "Data should not be null");
         assertEquals(10000, data.size(), "Expected 10,000 rows of data");

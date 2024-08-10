@@ -1,16 +1,19 @@
 package org.example.pojo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Objects;
+
 /**
  * Represents an activity with an id, title, due date, and completion status.
  */
 public class Activity {
-
     private static final Logger LOGGER = LoggerFactory.getLogger(Activity.class);
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private int id;
     private String title;
@@ -22,78 +25,87 @@ public class Activity {
         this.title = title;
         this.dueDate = dueDate;
         this.completed = completed;
-        LOGGER.debug("Created new Activity object with id {}", id);
     }
 
+    // Default constructor
     public Activity() {
-        LOGGER.debug("Created new empty Activity object");
     }
 
+    // Getter and setter methods
     public int getId() {
-        LOGGER.debug("Get id for Activity object with id {}", this.id);
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
-        LOGGER.debug("Set id to {} for Activity object with id {}", id, this.id);
     }
 
     public String getTitle() {
-        LOGGER.debug("Get title for Activity object with id {}", this.id);
         return title;
     }
 
     public void setTitle(String title) {
         this.title = title;
-        LOGGER.debug("Set title to {} for Activity object with id {}", title, this.id);
     }
 
     public String getDueDate() {
-        LOGGER.debug("Get due date for Activity object with id {}", this.id);
         return dueDate;
     }
 
     public void setDueDate(String dueDate) {
         this.dueDate = dueDate;
-        LOGGER.debug("Set due date to {} for Activity object with id {}", dueDate, this.id);
     }
 
     public boolean isCompleted() {
-        LOGGER.debug("Get completed for Activity object with id {}", this.id);
         return completed;
     }
 
     public void setCompleted(boolean completed) {
         this.completed = completed;
-        LOGGER.debug("Set completed to {} for Activity object with id {}", completed, this.id);
     }
 
-    /**
-     * Serializes this object to a JSON string.
-     *
-     * @return the JSON string representation of this object
-     * @throws JsonProcessingException if the serialization fails
-     */
-    public String serialize() throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        String jsonString = objectMapper.writeValueAsString(this);
-        LOGGER.debug("Serialized Activity object with id {} to JSON string {}", this.id, jsonString);
-        return jsonString;
+    @JsonIgnore
+    public String serialize() {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to serialize Activity: {}", this, e);
+            throw new RuntimeException("Serialization failed", e);
+        }
     }
 
-    /**
-     * Deserializes a JSON string to an Activity object.
-     *
-     * @param jsonString the JSON string to deserialize
-     * @return the Activity object
-     * @throws JsonProcessingException if the deserialization fails
-     */
-    public static Activity deserialize(String jsonString) throws JsonProcessingException {
-        LOGGER.debug("Deserializing JSON string {} to Activity object", jsonString);
-        ObjectMapper objectMapper = new ObjectMapper();
-        Activity activity = objectMapper.readValue(jsonString, Activity.class);
-        LOGGER.debug("Deserialized JSON string {} to Activity object with id {}", jsonString, activity.getId());
-        return activity;
+    public static Activity deserialize(String jsonString) {
+        try {
+            return OBJECT_MAPPER.readValue(jsonString, Activity.class);
+        } catch (JsonProcessingException e) {
+            LOGGER.error("Failed to deserialize Activity from JSON: {}", jsonString, e);
+            throw new RuntimeException("Deserialization failed", e);
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Activity activity = (Activity) o;
+        return id == activity.id &&
+                completed == activity.completed &&
+                Objects.equals(title, activity.title) &&
+                Objects.equals(dueDate, activity.dueDate);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, title, dueDate, completed);
+    }
+
+    @Override
+    public String toString() {
+        return "Activity{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", dueDate='" + dueDate + '\'' +
+                ", completed=" + completed +
+                '}';
     }
 }

@@ -4,10 +4,10 @@ import io.cucumber.java.en.When;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.Given;
 import org.example.hooks.Hooks;
+import org.example.utils.FileReaderUtils;
 import org.openqa.selenium.WebDriver;
 import org.junit.jupiter.api.Assertions;
 import org.example.pages.HomePage;
-import org.example.utils.FileReaderUtil;
 import com.opencsv.exceptions.CsvException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +51,7 @@ public class homesteps {
         logger.info("Reading data from file: {} for column(s): {}", filePath, columnName);
         List<String> columnNames = Arrays.asList(columnName.split(","));
 
-        List<Map<String, String>> columnData = FileReaderUtil.readFile(filePath, columnNames);
+        List<Map<String, String>> columnData = FileReaderUtils.readFile(filePath, columnNames);
         for (Map<String, String> row : columnData) {
             for (String columnNameString : columnNames) {
                 String emailString = row.get(columnNameString);
