@@ -1,6 +1,7 @@
 name: Java Chrome CI with Maven
 
 on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -30,10 +31,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Set up Chrome
-        uses: browser-actions/setup-chrome@latest
-
-      - name: Ensure target and cucumber directories exist
+      - name: Ensure required directories exist
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber
           mkdir -p ${GITHUB_WORKSPACE}/target/site
@@ -42,9 +40,12 @@ jobs:
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/json
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/html
 
-      - name: Run tests
+      - name: Set up Chrome
+        uses: browser-actions/setup-chrome@latest
+
+      - name: Run tests and generate reports
         run: |
-          mvn -Dtest=CucumberFeatureTest test -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
+          mvn clean test verify site -Dtest=CucumberFeatureTest -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
 
       - name: Archive log file
         if: always()
@@ -52,10 +53,6 @@ jobs:
         with:
           name: app-log-${{ matrix.browser }}-${{ matrix.network }}
           path: app.log
-
-      - name: Generate Cucumber HTML report
-        run: |
-          mvn -Dtest=CucumberFeatureTest verify -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
 
       - name: Archive Cucumber JSON report
         if: always()
@@ -70,10 +67,6 @@ jobs:
         with:
           name: cucumber-html-reports-${{ matrix.browser }}-${{ matrix.network }}
           path: target/cucumber-reports/
-
-      - name: Generate Site HTML report
-        run: |
-          mvn -Dtest=CucumberFeatureTest site -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
 
       - name: Archive Surefire HTML reports
         if: always()

@@ -1,6 +1,7 @@
 name: Java Firefox CI with Maven
 
 on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,10 +30,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Set up Firefox
-        uses: browser-actions/setup-firefox@latest
-
-      - name: Ensure target and cucumber directories exist
+      - name: Ensure required directories exist
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber
           mkdir -p ${GITHUB_WORKSPACE}/target/site
@@ -41,9 +39,12 @@ jobs:
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/json
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/html
 
-      - name: Run tests
+      - name: Set up Firefox
+        uses: browser-actions/setup-firefox@latest
+
+      - name: Run tests and generate reports
         run: |
-          mvn -Dtest=CucumberFeatureTest test -Dbrowser=${{ matrix.browser }}
+          mvn clean test verify site -Dtest=CucumberFeatureTest -Dbrowser=${{ matrix.browser }}
 
       - name: Archive log file
         if: always()
@@ -51,10 +52,6 @@ jobs:
         with:
           name: app-log-${{ matrix.browser }}
           path: app.log
-
-      - name: Generate Cucumber HTML report
-        run: |
-          mvn -Dtest=CucumberFeatureTest verify -Dbrowser=${{ matrix.browser }}
 
       - name: Archive Cucumber JSON report
         if: always()
@@ -69,10 +66,6 @@ jobs:
         with:
           name: cucumber-html-reports-${{ matrix.browser }}
           path: target/cucumber-reports/
-
-      - name: Generate Site HTML report
-        run: |
-          mvn -Dtest=CucumberFeatureTest site -Dbrowser=${{ matrix.browser }}
 
       - name: Archive Surefire HTML reports
         if: always()

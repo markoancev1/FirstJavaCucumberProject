@@ -1,6 +1,7 @@
 name: Java Unit Tests CI with Maven
 
 on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,13 +29,12 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Ensure target and site directory exist
+      - name: Ensure required directories exist
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target/site
 
-      - name: Run tests
-        run: |
-          mvn -Dtest=UnitTestsSuite test
+      - name: Run tests and generate reports
+        run: mvn clean test site -Dtest=UnitTestsSuite
 
       - name: Archive log file
         if: always()
@@ -43,13 +43,9 @@ jobs:
           name: app-log-unit-tests
           path: app.log
 
-      - name: Generate Site HTML report
-        run: |
-          mvn -Dtest=UnitTestsSuite site
-
       - name: Archive Surefire HTML reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-html-report
+          name: surefire-html-report-unit-tests
           path: target/site/

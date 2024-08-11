@@ -1,6 +1,7 @@
 name: Java API CI with Maven
 
 on: [push, pull_request]
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -27,7 +28,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Ensure target and cucumber directories exist
+      - name: Ensure required directories exist
         run: |
           mkdir -p ${GITHUB_WORKSPACE}/target/cucumber
           mkdir -p ${GITHUB_WORKSPACE}/target/site
@@ -36,8 +37,8 @@ jobs:
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/json
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/html
 
-      - name: Run tests
-        run: mvn -Dtest=ApiFeatureTest test
+      - name: Run tests and generate reports
+        run: mvn clean test verify site -Dtest=ApiFeatureTest
 
       - name: Archive log file
         if: always()
@@ -45,9 +46,6 @@ jobs:
         with:
           name: app-log-api
           path: app.log
-
-      - name: Generate Api HTML report
-        run: mvn -Dtest=ApiFeatureTest verify
 
       - name: Archive Api JSON report
         if: always()
@@ -63,13 +61,9 @@ jobs:
           name: cucumber-html-reports-api
           path: target/cucumber-reports/
 
-      - name: Generate Site HTML report
-        run: |
-          mvn -Dtest=ApiFeatureTest site
-
       - name: Archive Surefire HTML reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: surefire-html-reports
+          name: surefire-html-reports-api
           path: target/site/

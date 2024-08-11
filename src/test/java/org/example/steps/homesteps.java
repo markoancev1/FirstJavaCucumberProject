@@ -37,7 +37,7 @@ public class homesteps {
     @When("I run the tests")
     public void iRunTheTests() {
         logger.info("Executing test to check image visibility");
-        homePage.checkImageVisibility();
+        homePage.verifyMainElementsVisibility();
     }
 
     @Then("they should pass without any failures")
