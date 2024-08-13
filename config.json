@@ -3,12 +3,15 @@
     "chrome": {
       "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/110.0.5481.100 Safari/537.36",
       "headless": true,
-      "additionalArgs": ["--disable-gpu", "--no-sandbox"]
+      "additionalArgs": [
+        "--disable-gpu",
+        "--no-sandbox"
+      ]
     },
     "firefox": {
-      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:128.0) Gecko/20100101 Firefox/128.0.3",
       "headless": true,
-      "additionalArgs": ["--safe-mode"]
+      "additionalArgs": []
     }
   },
   "networkConditions": {
