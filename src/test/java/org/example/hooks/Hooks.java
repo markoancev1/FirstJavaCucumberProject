@@ -18,11 +18,13 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Hooks {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Hooks.class);
-    private static WebDriver driver;
+    private static final ThreadLocal<WebDriver> DRIVER_THREAD_LOCAL = new ThreadLocal<>();
+    private static final ConcurrentHashMap<Long, WebDriver> DRIVER_MAP = new ConcurrentHashMap<>();
     private static final JsonNode CONFIG_JSON;
 
     private static final String DEFAULT_BROWSER = "chrome";
@@ -35,14 +37,16 @@ public class Hooks {
     }
 
     @Before
-    public synchronized void setupDriver() {
-        if (driver == null) {
+    public void setupDriver() {
+        if (DRIVER_THREAD_LOCAL.get() == null) {
             String browser = System.getProperty("browser", DEFAULT_BROWSER);
-            LOGGER.info("Setting up WebDriver for {}", browser);
+            LOGGER.info("Setting up WebDriver for {} in thread {}", browser, Thread.currentThread().threadId());
             try {
-                initializeDriver(browser);
-                setupNetworkConditionsIfChrome();
-                navigateToTargetUrl();
+                WebDriver driver = initializeDriver(browser);
+                DRIVER_THREAD_LOCAL.set(driver);
+                DRIVER_MAP.put(Thread.currentThread().threadId(), driver);
+                setupNetworkConditionsIfChrome(driver);
+                navigateToTargetUrl(driver);
             } catch (Exception e) {
                 LOGGER.error("Failed to initialize WebDriver", e);
                 throw new RuntimeException("WebDriver setup failed", e);
@@ -64,13 +68,12 @@ public class Hooks {
         }
     }
 
-    private void initializeDriver(String browser) {
+    private WebDriver initializeDriver(String browser) {
         JsonNode browserConfig = CONFIG_JSON.path("browsers").path(browser.toLowerCase());
         if (browserConfig.isMissingNode()) {
             throw new RuntimeException("Unsupported browser: " + browser);
         }
-        driver = "firefox".equalsIgnoreCase(browser) ? createFirefoxDriver(browserConfig) : createChromeDriver(browserConfig);
-        LOGGER.info("WebDriver initialized for browser: {}", browser);
+        return "firefox".equalsIgnoreCase(browser) ? createFirefoxDriver(browserConfig) : createChromeDriver(browserConfig);
     }
 
     private WebDriver createFirefoxDriver(JsonNode browserConfig) {
@@ -116,15 +119,15 @@ public class Hooks {
         });
     }
 
-    private void setupNetworkConditionsIfChrome() {
+    private void setupNetworkConditionsIfChrome(WebDriver driver) {
         if (driver instanceof ChromeDriver) {
             LOGGER.debug("ChromeDriver detected, setting up network conditions");
-            setupNetworkConditions(determineNetworkConditions());
+            setupNetworkConditions((ChromeDriver) driver, determineNetworkConditions());
         }
     }
 
-    private void setupNetworkConditions(NetworkConditions conditions) {
-        DevTools devTools = ((ChromeDriver) driver).getDevTools();
+    private void setupNetworkConditions(ChromeDriver chromeDriver, NetworkConditions conditions) {
+        DevTools devTools = chromeDriver.getDevTools();
         devTools.createSession();
         devTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
         devTools.send(Network.emulateNetworkConditions(
@@ -141,27 +144,29 @@ public class Hooks {
                 conditions.connectionType, conditions.latency, conditions.downloadThroughput, conditions.uploadThroughput, conditions.packetLoss * 100);
     }
 
-    private void navigateToTargetUrl() {
-        LOGGER.info("Navigating to {}", TARGET_URL);
+    private void navigateToTargetUrl(WebDriver driver) {
+        LOGGER.info("Navigating to {} in thread {}", TARGET_URL, Thread.currentThread().threadId());
         driver.get(TARGET_URL);
     }
 
     @After
-    public synchronized void tearDown() {
+    public void tearDown() {
+        WebDriver driver = DRIVER_THREAD_LOCAL.get();
         if (driver != null) {
-            LOGGER.info("Quitting WebDriver");
+            LOGGER.info("Quitting WebDriver for thread {}", Thread.currentThread().threadId());
             try {
                 driver.quit();
             } catch (Exception e) {
                 LOGGER.error("Failed to quit WebDriver", e);
             } finally {
-                driver = null;
+                DRIVER_THREAD_LOCAL.remove();
+                DRIVER_MAP.remove(Thread.currentThread().threadId());
             }
         }
     }
 
-    public static synchronized WebDriver getDriver() {
-        return driver;
+    public static WebDriver getDriver() {
+        return DRIVER_THREAD_LOCAL.get();
     }
 
     private NetworkConditions determineNetworkConditions() {
