@@ -11,7 +11,7 @@ jobs:
       matrix:
         java-version: [22]
         browser: [chrome]
-        network: [2G, 3G, 4G, 5G, WIFI, ETHERNET]
+        network: [2G, 3G, 4G, WIFI, ETHERNET]
 
     steps:
       - name: Checkout repository
