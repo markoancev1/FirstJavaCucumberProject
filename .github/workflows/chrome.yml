@@ -44,6 +44,8 @@ jobs:
         uses: browser-actions/setup-chrome@latest
 
       - name: Run tests and generate reports
+        id: run_tests
+        continue-on-error: true
         run: |
           mvn clean test verify site -Dtest=CucumberFeatureTest -Dbrowser=${{ matrix.browser }} -Dconnection=${{ matrix.network }}
 
@@ -74,3 +76,7 @@ jobs:
         with:
           name: surefire-html-reports-${{ matrix.browser }}-${{ matrix.network }}
           path: target/site/
+
+      - name: Check on failures
+        if: steps.run_tests.outcome != 'success'
+        run: exit 1

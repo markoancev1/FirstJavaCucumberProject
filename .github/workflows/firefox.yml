@@ -48,6 +48,8 @@ jobs:
           geckodriver-version: '0.35.0'
 
       - name: Run tests and generate reports
+        id: run_tests
+        continue-on-error: true
         run: |
           mvn clean test verify site -Dtest=CucumberFeatureTest -Dbrowser=${{ matrix.browser }}
 
@@ -78,3 +80,7 @@ jobs:
         with:
           name: surefire-html-reports-${{ matrix.browser }}
           path: target/site/
+
+      - name: Check on failures
+        if: steps.run_tests.outcome != 'success'
+        run: exit 1

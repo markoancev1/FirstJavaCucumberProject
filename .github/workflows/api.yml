@@ -38,6 +38,8 @@ jobs:
           mkdir -p ${GITHUB_WORKSPACE}/cucumber-reports/html
 
       - name: Run tests and generate reports
+        id: run_tests
+        continue-on-error: true
         run: mvn clean test verify site -Dtest=ApiFeatureTest
 
       - name: Archive log file
@@ -67,3 +69,7 @@ jobs:
         with:
           name: surefire-html-reports-api
           path: target/site/
+
+      - name: Check on failures
+        if: steps.run_tests.outcome != 'success'
+        run: exit 1
